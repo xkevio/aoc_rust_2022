@@ -1,9 +1,9 @@
-use std::time::Instant;
-
 use colored::Colorize;
+use std::time::Instant;
 
 mod days;
 
+#[rustfmt::skip]
 fn main() {
     println!("{}", "\n🎄 Advent of Code 2022 🎄\n".green().bold());
     let time = Instant::now();
