@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use colored::Colorize;
 use std::time::Instant;
 
