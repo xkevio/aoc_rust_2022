@@ -15,6 +15,6 @@ fn main() {
     let part2_time = time.elapsed();
 
     println!("------------");
-    println!("{} took {}ms", "Part 1".yellow().bold(), part1_time.as_millis());
-    println!("{} took {}ms", "Part 2".yellow().bold(), part2_time.as_millis());
+    println!("{} took {}µs", "Part 1".yellow().bold(), part1_time.as_micros());
+    println!("{} took {}µs", "Part 2".yellow().bold(), part2_time.as_micros());
 }
