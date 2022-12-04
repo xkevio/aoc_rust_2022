@@ -1,25 +1,14 @@
 use itertools::Itertools;
-use std::ops::RangeInclusive;
 
 const INPUT: &str = include_str!("../../input/day4.txt");
 
-fn parse_input() -> Vec<(RangeInclusive<usize>, RangeInclusive<usize>)> {
+fn parse_input() -> Vec<(usize, usize, usize, usize)> {
     INPUT
         .lines()
         .flat_map(|l| {
-            l.split_once(',').map(|(a, b)| {
-                let a_range = a
-                    .split_once('-')
-                    .map(|(a, b)| a.parse::<usize>().unwrap()..=b.parse::<usize>().unwrap())
-                    .unwrap();
-
-                let b_range = b
-                    .split_once('-')
-                    .map(|(a, b)| a.parse::<usize>().unwrap()..=b.parse::<usize>().unwrap())
-                    .unwrap();
-
-                (a_range, b_range)
-            })
+            l.split(&['-', ','][..])
+                .map(|a| a.parse::<usize>().unwrap())
+                .tuples()
         })
         .collect_vec()
 }
@@ -27,23 +16,13 @@ fn parse_input() -> Vec<(RangeInclusive<usize>, RangeInclusive<usize>)> {
 pub fn part1() -> usize {
     parse_input()
         .iter()
-        .map(|(a, b)| {
-            usize::from(
-                (b.start() >= a.start() && b.end() <= a.end())
-                    || (a.start() >= b.start() && a.end() <= b.end()),
-            )
-        })
-        .sum()
+        .filter(|(a1, b1, a2, b2)| (a2 >= a1 && b2 <= b1) || (a1 >= a2 && b1 <= b2))
+        .count()
 }
 
 pub fn part2() -> usize {
     parse_input()
         .iter()
-        .map(|(a, b)| {
-            usize::from(
-                (b.start() >= a.start() && b.start() <= a.end())
-                    || (a.start() >= b.start() && a.start() <= b.end()),
-            )
-        })
-        .sum()
+        .filter(|(a1, b1, a2, b2)| (a2 >= a1 && a2 <= b1) || (a1 >= a2 && a1 <= b2))
+        .count()
 }
