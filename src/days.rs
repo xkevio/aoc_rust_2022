@@ -1,8 +1,8 @@
-pub mod day1;
-pub mod day1_itertools;
-pub mod day2;
-pub mod day3;
-pub mod day4;
-pub mod day5;
-pub mod day6;
-pub mod day7;
+pub mod day01;
+pub mod day01_itertools;
+pub mod day02;
+pub mod day03;
+pub mod day04;
+pub mod day05;
+pub mod day06;
+pub mod day07;

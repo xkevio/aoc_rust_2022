@@ -1,4 +1,4 @@
-const INPUT: &str = include_str!("../../input/day2.txt");
+const INPUT: &str = include_str!("../../input/day02.txt");
 
 pub fn part1() -> usize {
     INPUT

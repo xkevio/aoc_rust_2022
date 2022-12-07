@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use scan_fmt::scan_fmt;
 
-const INPUT: &str = include_str!("../../input/day5.txt");
+const INPUT: &str = include_str!("../../input/day05.txt");
 type Stacks = Vec<Vec<char>>;
 
 fn parse_input() -> Stacks {

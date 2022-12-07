@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const INPUT: &str = include_str!("../../input/day1.txt");
+const INPUT: &str = include_str!("../../input/day01.txt");
 
 fn main() {
     let input: Vec<usize> = INPUT

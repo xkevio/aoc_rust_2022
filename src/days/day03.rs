@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const INPUT: &str = include_str!("../../input/day3.txt");
+const INPUT: &str = include_str!("../../input/day03.txt");
 
 #[inline(always)]
 fn letter_to_prio(ch: char) -> usize {

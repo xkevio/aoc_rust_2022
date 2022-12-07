@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const INPUT: &str = include_str!("../../input/day4.txt");
+const INPUT: &str = include_str!("../../input/day04.txt");
 
 fn parse_input() -> Vec<(usize, usize, usize, usize)> {
     INPUT

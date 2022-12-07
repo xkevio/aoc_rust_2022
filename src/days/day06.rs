@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const INPUT: &str = include_str!("../../input/day6.txt");
+const INPUT: &str = include_str!("../../input/day06.txt");
 
 fn get_processed_amount(amount: usize) -> usize {
     INPUT

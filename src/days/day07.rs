@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::collections::BTreeMap;
 
-const INPUT: &str = include_str!("../../input/day7.txt");
+const INPUT: &str = include_str!("../../input/day07.txt");
 
 fn parse_input() -> BTreeMap<String, usize> {
     let mut file_system = BTreeMap::<String, usize>::new();
@@ -47,11 +47,9 @@ pub fn part1() -> usize {
 pub fn part2() -> usize {
     *parse_input()
         .values()
-        .filter(|&&v| {
-            match parse_input().get("/") {
-                Some(max) => ((70_000_000 - max) + v) >= 30_000_000,
-                None => false,
-            }
+        .filter(|&&v| match parse_input().get("/") {
+            Some(max) => ((70_000_000 - max) + v) >= 30_000_000,
+            None => false,
         })
         .min()
         .unwrap()

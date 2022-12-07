@@ -1,5 +1,6 @@
-const INPUT: &str = include_str!("../../input/day1.txt");
+const INPUT: &str = include_str!("../../input/day01.txt");
 
+// see day01_itertools for cleaner solution
 fn parse_input() -> Vec<usize> {
     INPUT
         .split("\n\n")
