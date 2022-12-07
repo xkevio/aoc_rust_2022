@@ -7,24 +7,19 @@ fn parse_input() -> BTreeMap<String, usize> {
     let mut file_system = BTreeMap::<String, usize>::new();
     let mut directory_stack = Vec::<String>::new();
 
-    file_system.insert("/".into(), 0);
-
     for line in INPUT.lines() {
         match &line.split_whitespace().collect_vec()[..] {
             ["$", "cd", cd] if *cd != ".." => {
-                if let Some(last) = directory_stack.last() {
-                    directory_stack.push(format!("{}{}", last, cd));
-                } else {
-                    directory_stack.push((*cd).into());
-                }
+                let path_name = match directory_stack.last() {
+                    Some(last) => format!("{}{}", last, cd),
+                    None => (*cd).into(),
+                };
+
+                directory_stack.push(path_name.clone());
+                file_system.entry(path_name).or_default();
             }
             ["$", "cd", cd] if *cd == ".." => {
                 directory_stack.pop();
-            }
-            ["dir", dir] => {
-                file_system
-                    .entry(format!("{}{}", directory_stack.last().unwrap(), dir))
-                    .or_default();
             }
             [value, _] if value.parse::<usize>().is_ok() => {
                 for prev_dir in &directory_stack {
