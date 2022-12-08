@@ -9,6 +9,13 @@ fn parse_input() -> Vec<Vec<u32>> {
         .collect_vec()
 }
 
+fn viewing_distance(x: u32, trees: &[u32]) -> usize {
+    trees
+        .iter()
+        .position(|&a| a >= x)
+        .map_or(trees.len(), |a| a + 1)
+}
+
 pub fn part1() -> usize {
     let th = parse_input();
     let mut vis_score = 0;
@@ -36,30 +43,12 @@ pub fn part2() -> usize {
 
     for r in 1..th.len() - 1 {
         for c in 1..th[0].len() - 1 {
-            let cur_element = th[r][c];
+            let e = th[r][c];
 
-            let left = th[r][0..c]
-                .iter()
-                .rev()
-                .position(|a| *a >= cur_element)
-                .unwrap_or(th[r][0..c].len() - 1)
-                + 1;
-            let right = th[r][c + 1..th[0].len()]
-                .iter()
-                .position(|a| *a >= cur_element)
-                .unwrap_or(th[r][c + 1..th[0].len()].len() - 1)
-                + 1;
-            let up = th[0..r]
-                .iter()
-                .rev()
-                .position(|a| a[c] >= cur_element)
-                .unwrap_or(th[0..r].len() - 1)
-                + 1;
-            let down = th[r + 1..th.len()]
-                .iter()
-                .position(|a| a[c] >= cur_element)
-                .unwrap_or(th[r + 1..th.len()].len() - 1)
-                + 1;
+            let left = viewing_distance(e, &th[r][0..c].iter().rev().copied().collect_vec());
+            let right = viewing_distance(e, &th[r][c + 1..th[0].len()]);
+            let up = viewing_distance(e, &th[0..r].iter().rev().map(|a| a[c]).collect_vec());
+            let down = viewing_distance(e, &th[r + 1..th.len()].iter().map(|a| a[c]).collect_vec());
 
             if left * right * up * down > scenic_score {
                 scenic_score = left * right * up * down;
