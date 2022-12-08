@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use std::borrow::Borrow;
 
 const INPUT: &str = include_str!("../../input/day08.txt");
 
@@ -9,10 +10,10 @@ fn parse_input() -> Vec<Vec<u32>> {
         .collect_vec()
 }
 
-fn viewing_distance(x: u32, trees: &[u32]) -> usize {
+fn viewing_distance<A: Borrow<u32>>(x: u32, trees: &[A]) -> usize {
     trees
         .iter()
-        .position(|&a| a >= x)
+        .position(|a| a.borrow() >= &x)
         .map_or(trees.len(), |a| a + 1)
 }
 
@@ -45,7 +46,7 @@ pub fn part2() -> usize {
         for c in 1..th[0].len() - 1 {
             let e = th[r][c];
 
-            let left = viewing_distance(e, &th[r][0..c].iter().rev().copied().collect_vec());
+            let left = viewing_distance(e, &th[r][0..c].iter().rev().collect_vec());
             let right = viewing_distance(e, &th[r][c + 1..th[0].len()]);
             let up = viewing_distance(e, &th[0..r].iter().rev().map(|a| a[c]).collect_vec());
             let down = viewing_distance(e, &th[r + 1..th.len()].iter().map(|a| a[c]).collect_vec());
