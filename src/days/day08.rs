@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use std::borrow::Borrow;
 
 const INPUT: &str = include_str!("../../input/day08.txt");
 
@@ -10,11 +9,11 @@ fn parse_input() -> Vec<Vec<u32>> {
         .collect_vec()
 }
 
-fn viewing_distance<A: Borrow<u32>>(x: u32, trees: &[A]) -> usize {
+fn view_score<'a, I: IntoIterator<Item = &'a u32>>(x: u32, trees: I, size: usize) -> usize {
     trees
-        .iter()
-        .position(|a| a.borrow() >= &x)
-        .map_or(trees.len(), |a| a + 1)
+        .into_iter()
+        .position(|&a| a >= x)
+        .map_or(size, |a| a + 1)
 }
 
 pub fn part1() -> usize {
@@ -38,6 +37,7 @@ pub fn part1() -> usize {
     vis_score
 }
 
+#[rustfmt::skip]
 pub fn part2() -> usize {
     let th = parse_input();
     let mut scenic_score = 0;
@@ -46,10 +46,10 @@ pub fn part2() -> usize {
         for c in 1..th[0].len() - 1 {
             let e = th[r][c];
 
-            let left = viewing_distance(e, &th[r][0..c].iter().rev().collect_vec());
-            let right = viewing_distance(e, &th[r][c + 1..th[0].len()]);
-            let up = viewing_distance(e, &th[0..r].iter().rev().map(|a| a[c]).collect_vec());
-            let down = viewing_distance(e, &th[r + 1..th.len()].iter().map(|a| a[c]).collect_vec());
+            let left = view_score(e, th[r][0..c].iter().rev(), c);
+            let right = view_score(e, &th[r][c + 1..th[0].len()], th[0].len() - (c + 1));
+            let up = view_score(e, th[0..r].iter().map(|a| &a[c]).rev(), r);
+            let down = view_score(e, th[r + 1..th.len()].iter().map(|a| &a[c]), th.len() - (r + 1));
 
             if left * right * up * down > scenic_score {
                 scenic_score = left * right * up * down;
