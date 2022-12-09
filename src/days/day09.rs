@@ -29,38 +29,18 @@ fn move_rope(
     seen_pos: &mut HashSet<(i32, i32)>,
 ) -> Vec<(i32, i32)> {
     let mut new_knots = Vec::from(knots);
-    match dir {
-        'D' => {
-            for _ in 0..amount {
-                new_knots[0].1 -= 1;
-                move_tail(&mut new_knots);
-                seen_pos.insert(new_knots[new_knots.len() - 1]);
-            }
+    for _ in 0..amount {
+        match dir {
+            'D' => new_knots[0].1 -= 1,
+            'U' => new_knots[0].1 += 1,
+            'L' => new_knots[0].0 -= 1,
+            'R' => new_knots[0].0 += 1,
+            _ => unreachable!(),
         }
-        'U' => {
-            for _ in 0..amount {
-                new_knots[0].1 += 1;
-                move_tail(&mut new_knots);
-                seen_pos.insert(new_knots[new_knots.len() - 1]);
-            }
-        }
-        'R' => {
-            for _ in 0..amount {
-                new_knots[0].0 += 1;
-                move_tail(&mut new_knots);
-                seen_pos.insert(new_knots[new_knots.len() - 1]);
-            }
-        }
-        'L' => {
-            for _ in 0..amount {
-                new_knots[0].0 -= 1;
-                move_tail(&mut new_knots);
-                seen_pos.insert(new_knots[new_knots.len() - 1]);
-            }
-        }
-        _ => unreachable!(),
-    }
 
+        move_tail(&mut new_knots);
+        seen_pos.insert(new_knots[new_knots.len() - 1]);
+    }
     new_knots
 }
 
