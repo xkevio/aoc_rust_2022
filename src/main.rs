@@ -10,10 +10,10 @@ fn main() {
     println!("{}", "\n🎄 Advent of Code 2022 🎄\n".green().bold());
     let time = Instant::now();
     
-    println!("{} {}", "Part 1:".yellow().bold(), days::day10::part1());
+    println!("{} {}", "Part 1:".yellow().bold(), days::day11::part1());
     let part1_time = time.elapsed();
 
-    println!("{} {}", "Part 2:".yellow().bold(), days::day10::part2());
+    println!("{} {}", "Part 2:".yellow().bold(), days::day11::part2());
     let part2_time = time.elapsed();
 
     println!("------------");
