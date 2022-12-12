@@ -4,48 +4,9 @@ use std::collections::{HashMap, HashSet, VecDeque};
 const INPUT: &str = include_str!("../../input/day12.txt");
 
 type Element = ((usize, usize), char);
-type AdjacencyList = HashMap<Element, Vec<Element>>;
 
-fn get_possible_neighbors(current_element: Element, grid: &[Vec<Element>]) -> Vec<Element> {
-    let mut neighbors = Vec::<Element>::new();
-    let (row, col) = current_element.0;
-
-    let transform_value = |c: char| {
-        if c == 'S' {
-            'a'
-        } else if c == 'E' {
-            'z'
-        } else {
-            c
-        }
-    };
-
-    let value = transform_value(current_element.1);
-    for offset in [-1, 1] {
-        if let Some(up) = grid.get((row as i32 + offset) as usize) {
-            let v_upp = transform_value(up[col].1);
-            if v_upp as u8 <= value as u8 + 1 {
-                neighbors.push(up[col]);
-            }
-        }
-    }
-
-    for offset in [-1, 1] {
-        if let Some(up) = grid[row].get((col as i32 + offset) as usize) {
-            let v_upp = transform_value(up.1);
-            if v_upp as u8 <= value as u8 + 1 {
-                neighbors.push(*up);
-            }
-        }
-    }
-
-    neighbors
-}
-
-fn build_adjacency_list() -> AdjacencyList {
-    let mut adjacency_list = AdjacencyList::new();
-
-    let grid = INPUT
+fn parse_input() -> Vec<Vec<Element>> {
+    INPUT
         .lines()
         .enumerate()
         .map(|(row, c)| {
@@ -54,45 +15,54 @@ fn build_adjacency_list() -> AdjacencyList {
                 .map(|(col, v)| ((row, col), v))
                 .collect_vec()
         })
-        .collect_vec();
+        .collect()
+}
 
-    for l in &grid {
-        for el in l {
-            adjacency_list.insert(*el, get_possible_neighbors(*el, &grid));
+fn get_possible_neighbors(current_element: &Element, grid: &[Vec<Element>]) -> Vec<Element> {
+    let mut neighbors = Vec::<Element>::new();
+    let (row, col) = current_element.0;
+    let value = current_element.1;
+
+    for offset in [(0, 1), (1, 0), (0, -1), (-1, 0)] {
+        let (row, col) = (row as i32 + offset.0, col as i32 + offset.1);
+        if let Some(v) = grid.get(row as usize).and_then(|r| r.get(col as usize)) {
+            if v.1 as u8 <= value as u8 + 1 {
+                neighbors.push(*v);
+            }
         }
     }
 
-    adjacency_list
+    neighbors
 }
 
-fn bfs(start_element: &Element, adjacency_list: &AdjacencyList) -> Option<usize> {
+fn bfs(start_element: &Element, end_element: &Element, grid: &[Vec<Element>]) -> Option<usize> {
     let mut queue = VecDeque::new();
     let mut distances = HashMap::<Element, Element>::new();
     let mut explored = HashSet::<Element>::new();
 
     explored.insert(*start_element);
-    queue.push_back(start_element);
+    queue.push_back(*start_element);
 
     while !queue.is_empty() {
         let v = queue.pop_front();
 
         if let Some(vv) = v {
-            if vv.1 == 'E' {
+            if vv.0 == end_element.0 {
                 let mut cur = vv;
                 let mut counter = 0;
 
-                while let Some(e) = distances.get(cur) {
+                while let Some(e) = distances.get(&cur) {
                     counter += 1;
-                    cur = e;
+                    cur = *e;
                 }
 
                 return Some(counter);
             }
 
-            for n in adjacency_list.get(vv).unwrap() {
-                if !explored.contains(n) {
-                    explored.insert(*n);
-                    distances.insert(*n, *vv);
+            for n in get_possible_neighbors(&vv, grid) {
+                if !explored.contains(&n) {
+                    explored.insert(n);
+                    distances.insert(n, vv);
                     queue.push_back(n);
                 }
             }
@@ -102,17 +72,36 @@ fn bfs(start_element: &Element, adjacency_list: &AdjacencyList) -> Option<usize>
     None
 }
 
+// #[rustfmt::skip]
+fn solve(only_start: bool) -> usize {
+    let mut grid = parse_input();
+    let mut start_element = *grid.iter().find_map(|v| v.iter().find(|e| e.1 == 'S')).unwrap();
+    let mut end_element = *grid.iter().find_map(|v| v.iter().find(|e| e.1 == 'E')).unwrap();
+
+    start_element.1 = 'a';
+    end_element.1 = 'z';
+
+    grid[start_element.0.0][start_element.0.1] = start_element;
+    grid[end_element.0.0][end_element.0.1] = end_element;
+
+    if only_start {
+        bfs(&start_element, &end_element, &grid).unwrap_or_default()
+    } else {
+        grid.iter()
+            .flat_map(|e| {
+                e.iter()
+                    .filter(|e| e.1 == 'a')
+                    .map(|start| bfs(start, &end_element, &grid).unwrap_or(usize::MAX))
+            })
+            .min()
+            .unwrap()
+    }
+}
+
 pub fn part1() -> usize {
-    bfs(&((20, 0), 'S'), &build_adjacency_list()).unwrap_or_default()
+    solve(true)
 }
 
 pub fn part2() -> usize {
-    let adjacency_list = build_adjacency_list();
-
-    adjacency_list
-        .keys()
-        .filter(|k| k.1 == 'a')
-        .map(|start| bfs(start, &adjacency_list).unwrap_or(usize::MAX))
-        .min()
-        .unwrap()
+    solve(false)
 }
