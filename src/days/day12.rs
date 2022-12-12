@@ -72,7 +72,7 @@ fn bfs(start_element: &Element, end_element: &Element, grid: &[Vec<Element>]) ->
     None
 }
 
-// #[rustfmt::skip]
+#[rustfmt::skip]
 fn solve(only_start: bool) -> usize {
     let mut grid = parse_input();
     let mut start_element = *grid.iter().find_map(|v| v.iter().find(|e| e.1 == 'S')).unwrap();
