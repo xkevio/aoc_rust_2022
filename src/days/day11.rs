@@ -68,20 +68,20 @@ fn parse_input() -> Vec<Monkey> {
 fn solve(iter: usize, worry_div: u128) -> u128 {
     let mut monkeys = parse_input();
     let mult = monkeys.iter().map(|m| m.divisor).product();
-    
+
     for _ in 0..iter {
         for i in 0..monkeys.len() {
             let monkey = &mut monkeys[i];
-    
+
             let v = monkey.turn(worry_div, mult);
             monkey.starting_items.clear();
-    
+
             for (other, w) in v {
                 monkeys[other as usize].starting_items.push(w);
             }
         }
     }
-    
+
     monkeys
         .iter()
         .sorted_by(|a, b| b.inspection_count.cmp(&a.inspection_count))
