@@ -1,37 +1,31 @@
 use itertools::Itertools;
-use std::collections::BTreeSet;
+use std::collections::HashSet;
 
 const INPUT: &str = include_str!("../../input/day14.txt");
 
 type Pos = (usize, usize);
 
-fn parse_input() -> BTreeSet<Pos> {
-    let mut rocks = BTreeSet::new();
+fn parse_input() -> HashSet<Pos> {
+    let mut rocks = HashSet::new();
+
     for l in INPUT.lines() {
         for (p1, p2) in l.split(" -> ").tuple_windows() {
-            let pair1 = p1.split_once(',').unwrap();
-            let pair2 = p2.split_once(',').unwrap();
+            let (fx, fy) = p1.split_once(',').unwrap();
+            let (sx, sy) = p2.split_once(',').unwrap();
 
-            let parsed_pair1 = (
-                pair1.0.parse::<usize>().unwrap(),
-                pair1.1.parse::<usize>().unwrap(),
-            );
+            let first_pair = (fx.parse::<usize>().unwrap(), fy.parse::<usize>().unwrap());
+            let second_pair = (sx.parse::<usize>().unwrap(), sy.parse::<usize>().unwrap());
 
-            let parsed_pair2 = (
-                pair2.0.parse::<usize>().unwrap(),
-                pair2.1.parse::<usize>().unwrap(),
-            );
-
-            for i in (parsed_pair1.0.min(parsed_pair2.0))..(parsed_pair2.0.max(parsed_pair1.0)) {
-                rocks.insert((i, parsed_pair1.1));
+            for i in (first_pair.0.min(second_pair.0))..(second_pair.0.max(first_pair.0)) {
+                rocks.insert((i, first_pair.1));
             }
 
-            for i in (parsed_pair1.1.min(parsed_pair2.1))..(parsed_pair2.1.max(parsed_pair1.1)) {
-                rocks.insert((parsed_pair1.0, i));
+            for i in (first_pair.1.min(second_pair.1))..(second_pair.1.max(first_pair.1)) {
+                rocks.insert((first_pair.0, i));
             }
 
-            rocks.insert(parsed_pair1);
-            rocks.insert(parsed_pair2);
+            rocks.insert(first_pair);
+            rocks.insert(second_pair);
         }
     }
 
@@ -39,7 +33,7 @@ fn parse_input() -> BTreeSet<Pos> {
 }
 
 // returns free pos if there is one, None if its not able to move any more
-fn check_sand_surroundings(positions: &BTreeSet<Pos>, sand_pos: &Pos) -> Option<Pos> {
+fn check_sand_surroundings(positions: &HashSet<Pos>, sand_pos: &Pos) -> Option<Pos> {
     for offset in [(0, 1), (-1, 1), (1, 1)] {
         let (row, col) = (sand_pos.0 as i32 + offset.0, sand_pos.1 as i32 + offset.1);
         if !positions.contains(&(row as usize, col as usize)) {
@@ -50,23 +44,34 @@ fn check_sand_surroundings(positions: &BTreeSet<Pos>, sand_pos: &Pos) -> Option<
     None
 }
 
-fn tick(positions: &BTreeSet<Pos>, sand_pos: &Pos) -> Pos {
+fn tick(positions: &HashSet<Pos>, sand_pos: &Pos) -> Pos {
     match check_sand_surroundings(positions, sand_pos) {
         Some(pos) => pos,
         None => *sand_pos,
     }
 }
 
-fn solve() -> (usize, usize) {
+fn solve(blockage: bool) -> usize {
     let mut positions = parse_input();
     let abyss = *positions.iter().max_by_key(|k| k.1).unwrap();
+
+    if blockage {
+        for x in 0..1000 {
+            positions.insert((x, abyss.1 + 2));
+        }
+    }
 
     let mut count = 0;
     'a: loop {
         let mut sand_pos = (500, 0);
         let mut new_pos = tick(&positions, &sand_pos);
 
-        if new_pos.1 >= abyss.1 {
+        if blockage && new_pos == (500, 0) {
+            count += 1;
+            break;
+        }
+
+        if new_pos.1 >= abyss.1 && !blockage {
             break;
         }
 
@@ -74,7 +79,7 @@ fn solve() -> (usize, usize) {
             sand_pos = new_pos;
             new_pos = tick(&positions, &sand_pos);
 
-            if sand_pos.1 >= abyss.1 {
+            if sand_pos.1 >= abyss.1 && !blockage {
                 break 'a;
             }
         }
@@ -83,13 +88,13 @@ fn solve() -> (usize, usize) {
         positions.insert(sand_pos);
     }
 
-    (count, 0)
+    count
 }
 
 pub fn part1() -> usize {
-    solve().0
+    solve(false)
 }
 
 pub fn part2() -> usize {
-    0
+    solve(true)
 }
