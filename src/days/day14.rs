@@ -1,12 +1,12 @@
 use itertools::Itertools;
-use std::collections::HashSet;
+use rustc_hash::FxHashSet;
 
 const INPUT: &str = include_str!("../../input/day14.txt");
 
 type Pos = (usize, usize);
 
-fn parse_input() -> HashSet<Pos> {
-    let mut rocks = HashSet::new();
+fn parse_input() -> FxHashSet<Pos> {
+    let mut rocks = FxHashSet::default();
 
     for l in INPUT.lines() {
         for (p1, p2) in l.split(" -> ").tuple_windows() {
@@ -33,7 +33,7 @@ fn parse_input() -> HashSet<Pos> {
 }
 
 // returns free pos if there is one, None if its not able to move any more
-fn check_sand_surroundings(positions: &HashSet<Pos>, sand_pos: &Pos) -> Option<Pos> {
+fn check_sand_surroundings(positions: &FxHashSet<Pos>, sand_pos: &Pos) -> Option<Pos> {
     for offset in [(0, 1), (-1, 1), (1, 1)] {
         let (row, col) = (sand_pos.0 as i32 + offset.0, sand_pos.1 as i32 + offset.1);
         if !positions.contains(&(row as usize, col as usize)) {
@@ -44,7 +44,7 @@ fn check_sand_surroundings(positions: &HashSet<Pos>, sand_pos: &Pos) -> Option<P
     None
 }
 
-fn tick(positions: &HashSet<Pos>, sand_pos: &Pos) -> Pos {
+fn tick(positions: &FxHashSet<Pos>, sand_pos: &Pos) -> Pos {
     match check_sand_surroundings(positions, sand_pos) {
         Some(pos) => pos,
         None => *sand_pos,
