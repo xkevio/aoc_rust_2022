@@ -77,7 +77,7 @@ fn solve(iter: usize, worry_div: u128) -> u128 {
             monkey.starting_items.clear();
 
             for (other, w) in v {
-                monkeys[other as usize].starting_items.push(w);
+                monkeys[other].starting_items.push(w);
             }
         }
     }
