@@ -14,4 +14,4 @@ I don't intend to write the most performant, elegant or clean Rust code ever -- 
 | ✅ Day 4    | ✅ Day 11      | ✅ Day 18     | *Day 25*
 | ✅ Day 5    | ✅ Day 12      | ❌ *Day 19*     | ---
 | ✅ Day 6    | ✅ Day 13      | ✅ Day 20     | ---
-| ✅ Day 7    | ✅ Day 14      |  *Day 21*     | ---
+| ✅ Day 7    | ✅ Day 14      | ✅ Day 21     | ---
