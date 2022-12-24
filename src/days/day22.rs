@@ -47,6 +47,31 @@ macro_rules! move_dir {
     };
 }
 
+macro_rules! move_dir_3d {
+    ($regions:ident, $tile:ident, $x:expr, $y:expr, $dir:expr, $cr:expr) => {
+        {
+            let next_pos = Tile::new(TileType::Open, $x, $y);
+    
+            if $regions.contains_key(&next_pos) {
+                $tile.pos = next_pos.pos;
+            } else {
+                if $regions.contains_key(&Tile::new(TileType::Wall, $x, $y)) {
+                    return;
+                }
+
+                let (new_pos, new_dir) = $tile.get_3d_wrapped_tile($regions, &$dir, *$cr);
+                if let Some(p) = new_pos {
+                    println!("cube wrapping from {:?} to {:?}, from region {} going {:?} to {:?}", $tile.pos, p.pos, $cr, $dir, new_dir);
+                    $tile.pos = p.pos;
+                    $dir = new_dir;
+                } else {
+                    return;
+                }
+            }
+        }
+    };
+}
+
 impl Tile {
     pub fn new(t_type: TileType, x: usize, y: usize) -> Self {
         Self {
@@ -65,7 +90,21 @@ impl Tile {
     }
 
     pub fn move_tile_3d(&mut self, _regions: &FxHashMap<Tile, char>, _current_dir: &Direction, _len: usize) {
-        todo!()
+        let mut current_dir = *_current_dir;
+        let current_region = _regions.get(self).unwrap();
+
+        // println!("current pos: {:?}, current direction: {:?}", self.pos, current_dir);
+
+        for _ in 0.._len {
+            match current_dir {
+                Direction::Right => move_dir_3d!(_regions, self, self.pos.0 + 1, self.pos.1, current_dir, current_region),
+                Direction::Down => move_dir_3d!(_regions, self, self.pos.0, self.pos.1 + 1, current_dir, current_region),
+                Direction::Left => move_dir_3d!(_regions, self, self.pos.0 - 1, self.pos.1, current_dir, current_region),
+                Direction::Up => move_dir_3d!(_regions, self, self.pos.0, self.pos.1 - 1, current_dir, current_region),
+            }
+        }
+
+        // println!("{:?}, new direction: {:?}", self.pos, current_dir);
     }
 
     fn get_wrapped_tile(&self, map: &FxHashSet<Tile>, dir: &Direction) -> Option<Tile> {
@@ -81,8 +120,223 @@ impl Tile {
             .copied()
     }
 
-    fn get_3d_wrapped_tile(&self, _regions: &FxHashMap<Tile, char>, _current_dir: &Direction, _current_region: char) -> Option<Tile> {
-        todo!()
+    fn get_3d_wrapped_tile(&self, regions: &FxHashMap<Tile, char>, current_dir: &Direction, current_region: char) -> (Option<Tile>, Direction) {
+        match current_region {
+            'A' => {
+                match current_dir {
+                    // to E
+                    Direction::Up => {
+                        let x = 1;
+                        let y = 150 + (self.pos.0 - 50);
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Right)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Left => {
+                        // to F
+                        let x = 1;
+                        let y = 151 - self.pos.1;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Right)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    _ => unreachable!()
+                }
+            },
+            'B' => {
+                match current_dir {
+                    Direction::Up => {
+                        // to E
+                        let x = self.pos.0 - 100;
+                        let y = 200;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Up)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Right => {
+                        // to D
+                        let x = 100;
+                        let y = 151 - self.pos.1;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Left)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Down => {
+                        // to C
+                        let x = 100;
+                        let y = 50 + (self.pos.0 - 100);
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Left)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    _ => unreachable!()
+                }
+            }
+            'C' => {
+                match current_dir {
+                    Direction::Right => {
+                        // to B
+                        let x = 50 + (self.pos.1 - 50);
+                        let y = 50;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Up)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Left => {
+                        // to F
+                        let x = self.pos.1 - 50;
+                        let y = 101;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Down)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    _ => unreachable!()
+                }
+            }
+            'D' => {
+                match current_dir {
+                    Direction::Right => {
+                        // to B
+                        let x = 150;
+                        let y = 151 - self.pos.1;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Left)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Down => {
+                        // to E
+                        let x = 50;
+                        let y = 150 + (self.pos.0 - 50);
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Left)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+
+                    _ => unreachable!()
+                }
+            }
+            'E' => {
+                match current_dir {
+                    Direction::Left => {
+                        // to A
+                        let x = 50 + (self.pos.1 - 150);
+                        let y = 1;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Down)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Right => {
+                        // to D
+                        let x = 50 + (self.pos.1 - 150);
+                        let y = 150;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Up)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Down => {
+                        // to B
+                        let x = self.pos.0 + 100;
+                        let y = 1;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Down)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    _ => unreachable!()
+                }
+            }
+            'F' => {
+                match current_dir {
+                    Direction::Left => {
+                        // to A
+                        let x = 51;
+                        let y = 51 - (self.pos.1 - 100);
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Right)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    Direction::Up => {
+                        // to C
+                        let x = 51;
+                        let y = self.pos.0 + 50;
+
+                        let tile = Tile::new(TileType::Open, x, y);
+                        if regions.contains_key(&tile) {
+                            (Some(tile), Direction::Right)
+                        } else {
+                            println!("cube wrapping from {:?}, found wall tile at {:?}", self.pos, tile.pos);
+                            (None, *current_dir)
+                        }
+                    },
+                    _ => unreachable!()
+                }
+            }
+            _ => unreachable!()
+        }
     }
 }
 
@@ -168,6 +422,8 @@ fn apply_instructions(map: &FxHashSet<Tile>, instr: &str, start: &Tile, regions:
         }
     }
 
+    dbg!(new_tile.pos);
+    dbg!(current_dir);
     1000 * new_tile.pos.1 + 4 * new_tile.pos.0 + current_dir as usize
 }
 
@@ -183,26 +439,25 @@ pub fn part1() -> usize {
 }
 
 pub fn part2() -> usize {
-    // let (map, instrs) = parse_input();
+    let (map, instrs) = parse_input();
 
-    // let mut regions = FxHashMap::<Tile, char>::default();
-    // for tile in &map {
-    //     match tile.pos {
-    //         (51..=100, 1..=50) => { regions.insert(*tile, 'A'); },
-    //         (101.., 1..=50) => { regions.insert(*tile, 'B'); },
-    //         (51..=100, 51..=100) => { regions.insert(*tile, 'C'); },
-    //         (51..=100, 101..=150) => { regions.insert(*tile, 'D'); },
-    //         (1..=50, 101..=150) => { regions.insert(*tile, 'E'); },
-    //         (1..=50, 151..) => { regions.insert(*tile, 'E'); },
-    //         _ => unreachable!("Didn't account for {:?}", tile.pos)
-    //     }
-    // }
+    let mut regions = FxHashMap::<Tile, char>::default();
+    for tile in &map {
+        match tile.pos {
+            (51..=100, 1..=50) => { regions.insert(*tile, 'A'); },
+            (101.., 1..=50) => { regions.insert(*tile, 'B'); },
+            (51..=100, 51..=100) => { regions.insert(*tile, 'C'); },
+            (51..=100, 101..=150) => { regions.insert(*tile, 'D'); },
+            (1..=50, 151..) => { regions.insert(*tile, 'E'); },
+            (1..=50, 101..=150) => { regions.insert(*tile, 'F'); },
+            _ => unreachable!("Didn't account for {:?}", tile.pos)
+        }
+    }
 
-    // let start_pos = map
-    //     .iter()
-    //     .filter(|t| t.t_type == TileType::Open)
-    //     .min_by(|x, y| x.pos.1.cmp(&y.pos.1).then_with(|| x.pos.0.cmp(&y.pos.0)));
+    let start_pos = map
+        .iter()
+        .filter(|t| t.t_type == TileType::Open)
+        .min_by(|x, y| x.pos.1.cmp(&y.pos.1).then_with(|| x.pos.0.cmp(&y.pos.0)));
 
-    // apply_instructions(&map, &instrs, start_pos.unwrap(), Some(&regions))    
-    0
+    apply_instructions(&map, &instrs, start_pos.unwrap(), Some(&regions))
 }
