@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use proc_util::RotateEnum;
-use rustc_hash::{FxHashSet, FxHashMap};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 const INPUT: &str = include_str!("../../input/day22.txt");
 
@@ -49,27 +49,25 @@ macro_rules! move_dir {
 }
 
 macro_rules! move_dir_3d {
-    ($regions:ident, $tile:ident, $x:expr, $y:expr, $dir:ident, $cr:expr) => {
-        {
-            let next_pos = Tile::new(TileType::Open, $x, $y);
-    
-            if $regions.contains_key(&next_pos) {
-                $tile.pos = next_pos.pos;
-            } else {
-                if $regions.contains_key(&Tile::new(TileType::Wall, $x, $y)) {
-                    return;
-                }
+    ($regions:ident, $tile:ident, $x:expr, $y:expr, $dir:ident, $cr:expr) => {{
+        let next_pos = Tile::new(TileType::Open, $x, $y);
 
-                let (new_pos, new_dir) = $tile.get_3d_wrapped_tile($regions, &mut $dir, *$cr);
-                if let Some(p) = new_pos {
-                    $tile.pos = p.pos;
-                    *$dir = new_dir;
-                } else {
-                    return;
-                }
+        if $regions.contains_key(&next_pos) {
+            $tile.pos = next_pos.pos;
+        } else {
+            if $regions.contains_key(&Tile::new(TileType::Wall, $x, $y)) {
+                return;
+            }
+
+            let (new_pos, new_dir) = $tile.get_3d_wrapped_tile($regions, &mut $dir, *$cr);
+            if let Some(p) = new_pos {
+                $tile.pos = p.pos;
+                *$dir = new_dir;
+            } else {
+                return;
             }
         }
-    };
+    }};
 }
 
 macro_rules! fill_3d_match {
@@ -84,7 +82,7 @@ macro_rules! fill_3d_match {
                 }
             },)*
             _ => unreachable!()
-        } 
+        }
     };
 }
 
@@ -105,6 +103,7 @@ impl Tile {
         }
     }
 
+    #[rustfmt::skip]
     pub fn move_tile_3d(&mut self, regions: &FxHashMap<Tile, char>, current_dir: &mut Direction, len: usize) {
         let mut current_dir = current_dir;
         let current_region = regions.get(self).unwrap();
@@ -133,35 +132,40 @@ impl Tile {
     }
 
     #[rustfmt::skip]
-    fn get_3d_wrapped_tile(&self, regions: &FxHashMap<Tile, char>, current_dir: &mut Direction, current_region: char) -> (Option<Tile>, Direction) {
+    fn get_3d_wrapped_tile(
+        &self,
+        regions: &FxHashMap<Tile, char>,
+        current_dir: &mut Direction,
+        current_region: char,
+    ) -> (Option<Tile>, Direction) {
         match current_region {
             'A' => {
-                fill_3d_match!(regions, current_dir, Direction::Up, 1, 150 + (self.pos.0 - 50), Direction::Right,
+                fill_3d_match!(regions, current_dir, Direction::Up, 1, 150 + (self.pos.0 - 50), Direction::Right, 
                                 Direction::Left, 1, 151 - self.pos.1, Direction::Right)
-            },
+            }
             'B' => {
-                fill_3d_match!(regions, current_dir, Direction::Up, self.pos.0 - 100, 200, Direction::Up,
-                                Direction::Right, 100, 151 - self.pos.1, Direction::Left,
+                fill_3d_match!(regions, current_dir, Direction::Up, self.pos.0 - 100, 200, Direction::Up, 
+                                Direction::Right, 100, 151 - self.pos.1, Direction::Left, 
                                 Direction::Down, 100, 50 + (self.pos.0 - 100), Direction::Left)
             }
             'C' => {
-                fill_3d_match!(regions, current_dir, Direction::Right, self.pos.1 + 50, 50, Direction::Up,
+                fill_3d_match!(regions, current_dir, Direction::Right, self.pos.1 + 50, 50, Direction::Up, 
                                 Direction::Left, self.pos.1 - 50, 101, Direction::Down)
             }
             'D' => {
-                fill_3d_match!(regions, current_dir, Direction::Right, 150, 151 - self.pos.1, Direction::Left,
+                fill_3d_match!(regions, current_dir, Direction::Right, 150, 151 - self.pos.1, Direction::Left, 
                                 Direction::Down, 50, self.pos.0 + 100, Direction::Left)
             }
             'E' => {
-                fill_3d_match!(regions, current_dir, Direction::Left, 50 + (self.pos.1 - 150), 1, Direction::Down,
-                                Direction::Right, self.pos.1 - 100, 150, Direction::Up,
+                fill_3d_match!(regions, current_dir, Direction::Left, 50 + (self.pos.1 - 150), 1, Direction::Down, 
+                                Direction::Right, self.pos.1 - 100, 150, Direction::Up, 
                                 Direction::Down, self.pos.0 + 100, 1, Direction::Down)
             }
             'F' => {
-                fill_3d_match!(regions, current_dir, Direction::Left, 51, 51 - (self.pos.1 - 100), Direction::Right,
+                fill_3d_match!(regions, current_dir, Direction::Left, 51, 51 - (self.pos.1 - 100), Direction::Right, 
                                 Direction::Up, 51, self.pos.0 + 50, Direction::Right)
             }
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }
@@ -187,6 +191,7 @@ fn parse_input() -> (FxHashSet<Tile>, String) {
     (map, instrs.to_string())
 }
 
+#[rustfmt::skip]
 fn apply_instructions(map: &FxHashSet<Tile>, instr: &str, start: &Tile, regions: Option<&FxHashMap<Tile, char>>) -> usize {
     let lengths = instr.split(char::is_alphabetic).collect_vec();
     let mut directions = instr.split(char::is_numeric).collect_vec();
@@ -239,7 +244,7 @@ pub fn part2() -> usize {
             (51..=100, 101..=150) => regions.insert(*tile, 'D'),
             (1..=50, 151..) => regions.insert(*tile, 'E'),
             (1..=50, 101..=150) => regions.insert(*tile, 'F'),
-            _ => unreachable!("Didn't account for {:?}", tile.pos)
+            _ => unreachable!("Didn't account for {:?}", tile.pos),
         };
     }
 
